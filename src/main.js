@@ -1,3 +1,4 @@
+import { uid } from "uid";
 import { formEl, containerEl } from "./refs";
 import { save, load, saveArrObj } from "./api";
 import { createCard } from "./markup";
@@ -20,9 +21,9 @@ function handlerSubmit(e) {
   //   });
   const newObj = Object.fromEntries(new FormData(e.target));
   newObj.createdAt = Date.now();
+  newObj.id = uid();
   saveArrObj(newObj, STORAGE_KEY);
   e.target.reset();
-  console.log(newObj);
   const markup = createCard([newObj]);
   pushMarkup(markup);
 }
@@ -41,9 +42,9 @@ function pushMarkup(markup) {
 function removeCard(e) {
   if (!e.target.classList.contains("btn-close")) return;
   const { parentEl, cardId } = getParent(e.target);
-  const filteredArr = load(STORAGE_KEY).filter(
-    ({ createdAt }) => Number(createdAt) !== Number(cardId)
-  );
+  const filteredArr = load(STORAGE_KEY).filter(({ id }) => {
+    return id !== cardId;
+  });
   save(STORAGE_KEY, filteredArr);
   parentEl.remove();
 }
@@ -52,9 +53,7 @@ function updateTitle(e) {
   const title = e.target.textContent;
   const cards = load(STORAGE_KEY);
   const { cardId } = getParent(e.target);
-  const cardObj = cards.find(
-    ({ createdAt }) => Number(createdAt) === Number(cardId)
-  );
+  const cardObj = cards.find(({ id }) => id === cardId);
   cardObj.name = title;
   save(STORAGE_KEY, cards);
 }
